@@ -31,16 +31,18 @@ find_package (Python COMPONENTS Interpreter NumPy)
 set(PYBIND11_PYTHON_VERSION ${Python_VERSION} CACHE STRING "")
 find_package(pybind11 REQUIRED)
 
+find_package(s2 REQUIRED)
+
 # Build
 # =====
 
 add_library(pys2index MODULE src/main.cpp)
 
 target_include_directories(pys2index PUBLIC
-  ${xtensor-python_INCLUDE_DIRS} ${Python_NumPy_INCLUDE_DIRS} ${pybind11_INCLUDE_DIRS})
+  ${xtensor-python_INCLUDE_DIRS} ${Python_NumPy_INCLUDE_DIRS} ${pybind11_INCLUDE_DIRS} ${s2_INCLUDE_DIRS})
 
 target_link_libraries(pys2index PUBLIC
-  xtensor xtensor-python pybind11::module)
+  xtensor xtensor-python pybind11::module s2)
 
 set_target_properties(pys2index PROPERTIES
   PREFIX "${PYTHON_MODULE_PREFIX}"

@@ -3,6 +3,8 @@
 #include "xtensor/xmath.hpp"
 #include "xtensor/xarray.hpp"
 
+#include "s2/s2point_index.h"
+
 #define FORCE_IMPORT_ARRAY
 #include "xtensor-python/pyarray.hpp"
 #include "xtensor-python/pyvectorize.hpp"
