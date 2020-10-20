@@ -5,6 +5,8 @@ set(CMAKE_MODULE_PATH
   ${PROJECT_SOURCE_DIR}/cmake
   ${CMAKE_MODULE_PATH})
 
+set(pys2index_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 set(CMAKE_CXX_STANDARD 14)
 set(PYBIND11_CPP_STANDARD -std=c++14)
 
@@ -39,10 +41,19 @@ find_package(s2 REQUIRED)
 add_library(pys2index MODULE src/main.cpp)
 
 target_include_directories(pys2index PUBLIC
-  ${xtensor-python_INCLUDE_DIRS} ${Python_NumPy_INCLUDE_DIRS} ${pybind11_INCLUDE_DIRS} ${s2_INCLUDE_DIRS})
+  ${pys2index_INCLUDE_DIR}
+  ${xtensor-python_INCLUDE_DIRS}
+  ${Python_NumPy_INCLUDE_DIRS}
+  ${pybind11_INCLUDE_DIRS}
+  ${s2_INCLUDE_DIRS}
+  )
 
 target_link_libraries(pys2index PUBLIC
-  xtensor xtensor-python pybind11::module s2)
+  xtensor
+  xtensor-python
+  pybind11::module
+  s2
+  )
 
 set_target_properties(pys2index PROPERTIES
   PREFIX "${PYTHON_MODULE_PREFIX}"

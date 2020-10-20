@@ -1,48 +1,12 @@
 #include "pybind11/pybind11.h"
 
-#include "xtensor/xmath.hpp"
-#include "xtensor/xarray.hpp"
-
-#include "s2/s2point_index.h"
-
 #define FORCE_IMPORT_ARRAY
-#include "xtensor-python/pyarray.hpp"
-#include "xtensor-python/pyvectorize.hpp"
+#include "xtensor-python/pytensor.hpp"
 
-#include <iostream>
-#include <numeric>
-#include <cmath>
+#include "pys2index/s2pointindex.hpp"
 
 namespace py = pybind11;
 
-// Examples
-
-inline double example1(xt::pyarray<double> &m)
-{
-    return m(0);
-}
-
-inline xt::pyarray<double> example2(xt::pyarray<double> &m)
-{
-    return m + 2;
-}
-
-// Readme Examples
-
-inline double readme_example1(xt::pyarray<double> &m)
-{
-    auto sines = xt::sin(m);
-    return std::accumulate(sines.cbegin(), sines.cend(), 0.0);
-}
-
-// Vectorize Examples
-
-inline double scalar_func(double i, double j)
-{
-    return std::sin(i) + std::cos(j);
-}
-
-// Python Module and Docstrings
 
 PYBIND11_MODULE(pys2index, m)
 {
@@ -56,16 +20,13 @@ PYBIND11_MODULE(pys2index, m)
         .. autosummary::
            :toctree: _generate
 
-           example1
-           example2
-           readme_example1
-           vectorize_example1
+           S2PointIndex
     )pbdoc";
 
-    m.def("example1", example1, "Return the first element of an array, of dimension at least one");
-    m.def("example2", example2, "Return the the specified array plus 2");
+    py::class_<s2point_index>(m, "S2PointIndex")
+        .def(py::init<const xt::pytensor<double, 2>&>())
+        .def(py::init<const xt::pytensor<float, 2>&>())
+        .def("query", &s2point_index::query<double>, "")
+        .def("query", &s2point_index::query<float>, "");
 
-    m.def("readme_example1", readme_example1, "Accumulate the sines of all the values of the specified array");
-
-    m.def("vectorize_example1", xt::pyvectorize(scalar_func), "Add the sine and and cosine of the two specified values");
 }
