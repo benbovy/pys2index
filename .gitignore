@@ -12,5 +12,9 @@ build/
 .ccls-cache/
 compile_commands.json
 
+# doc
+docs/_build/
+docs/_generate/
+
 # misc
 .dir-locals.el
