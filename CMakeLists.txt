@@ -42,6 +42,7 @@ add_library(pys2index MODULE src/main.cpp)
 
 target_include_directories(pys2index PUBLIC
   ${pys2index_INCLUDE_DIR}
+  ${xtensor_INCLUDE_DIRS}
   ${xtensor-python_INCLUDE_DIRS}
   ${Python_NumPy_INCLUDE_DIRS}
   ${pybind11_INCLUDE_DIRS}
