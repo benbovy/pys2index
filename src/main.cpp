@@ -1,5 +1,7 @@
 #include "pybind11/pybind11.h"
 
+#include "xtensor/xview.hpp"
+
 #define FORCE_IMPORT_ARRAY
 #include "xtensor-python/pytensor.hpp"
 
@@ -29,7 +31,7 @@ PYBIND11_MODULE(pys2index, m)
 
         Parameters
         ----------
-        latlon_points : array-like of shape (n_points, 2)
+        latlon_points : ndarray of shape (n_points, 2)
             2-d array of point coordinates (latitude, longitude) in degrees.
     )pbdoc");
 
@@ -37,30 +39,37 @@ PYBIND11_MODULE(pys2index, m)
     py_s2pointindex.def(py::init<const xt::pytensor<float, 2>&>(), py::call_guard<py::gil_scoped_release>());
     py_s2pointindex.def(py::init<const xt::pytensor<uint64, 1>&>(), py::call_guard<py::gil_scoped_release>());
 
-    py_s2pointindex.def("query", &s2point_index::query<double>, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+    py_s2pointindex.def("query", &s2point_index::query<double>,
+                        py::call_guard<py::gil_scoped_release>(),
+                        R"pbdoc(
         Query the index for nearest neighbors.
 
         Parameters
         ----------
-        latlon_points : array-like of shape (n_points, 2)
+        latlon_points : ndarray of shape (n_points, 2), dtype=double
             2-d array of query point coordinates (latitude, longitude) in degrees.
+
+        Returns
+        -------
+        distances : ndarray of shape (n_points,), dtype=double
+            Distance to the nearest neighbor of the cooresponding points (in degrees).
+        positions : ndarray of shape (n_points,), dtype=int
+            Indices of the nearest neighbor of the corresponding points.
+
     )pbdoc");
     py_s2pointindex.def("query", &s2point_index::query<float>, py::call_guard<py::gil_scoped_release>(),
         "Query the index for nearest neighbors (float version).");
 
-    py_s2pointindex.def("get_latlon_points", &s2point_index::get_latlon_points, py::call_guard<py::gil_scoped_release>());
+    py_s2pointindex.def("get_cell_ids", &s2point_index::get_cell_ids,
+                        py::call_guard<py::gil_scoped_release>(),
+                        py::return_value_policy::move);
 
     py_s2pointindex.def(py::pickle(
         [](s2point_index &idx) {
-            return idx.get_latlon_points();
+            return idx.get_cell_ids();
         },
-        [](xt::pytensor<double, 2> &points) {
-            //if (t.size() != 1)
-            //    throw std::runtime_error("Invalid state!");
-
-            s2point_index *idx = new s2point_index(points);
-
-            return idx;
+        [](xt::pytensor<uint64, 1> &cell_ids) {
+            return s2point_index(cell_ids);
         }
      ));
 
