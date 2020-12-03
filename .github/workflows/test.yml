@@ -27,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           channels: conda-forge,defaults
           channel-priority: true
-          auto-activate-base: true
+          auto-activate-base: false
       - name: Conda info
         shell: bash -l {0}
         run: |
