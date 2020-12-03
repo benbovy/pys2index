@@ -38,14 +38,13 @@ jobs:
           printenv | sort
       - name: Install dependencies
         shell: bash -l {0}
-        run: mamba install numpy s2geometry pybind11 xtensor xtensor-python cmake pytest
+        run: mamba install numpy s2geometry pybind11 xtensor xtensor-python>=0.24 cmake pytest
       - name: Build and install pys2index
         shell: bash -l {0}
         run: |
+          export S2_DIR=$CONDA_PREFIX
           python -m pip install --no-deps -e .
           python -OO -c "import pys2index"
-        env:
-          S2_DIR: "$CONDA_PREFIX"
       - name: Run tests
         shell: bash -l {0}
         run: pytest . --verbose --color=yes
