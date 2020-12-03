@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "pybind11/pybind11.h"
 
 #include "xtensor/xview.hpp"
@@ -69,7 +71,7 @@ PYBIND11_MODULE(pys2index, m)
             return idx.get_cell_ids();
         },
         [](xt::pytensor<uint64, 1> &cell_ids) {
-            return s2point_index(cell_ids);
+            return std::make_unique<s2point_index>(s2point_index(cell_ids));
         }
      ));
 

@@ -49,6 +49,7 @@ find_path(s2_INCLUDE_DIR s2/s2cell.h
 find_library(s2_LIBRARY
   NAMES s2
   HINTS ${S2_ROOT}
+  PATH_SUFFIXES lib
   )
 
 find_package_handle_standard_args(s2
