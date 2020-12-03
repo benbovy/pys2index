@@ -42,7 +42,6 @@ jobs:
       - name: Build and install pys2index
         shell: bash -l {0}
         run: |
-          export S2_DIR=$CONDA_PREFIX
           python -m pip install . --no-deps -vv
           python -OO -c "import pys2index"
       - name: Run tests

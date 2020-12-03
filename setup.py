@@ -3,6 +3,7 @@ import re
 import sys
 import platform
 import subprocess
+import sysconfig
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
@@ -38,7 +39,8 @@ class CMakeBuild(build_ext):
             extdir += os.path.sep
 
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+                      '-DPYTHON_EXECUTABLE=' + sys.executable,
+                      '-DPYTHON_INCLUDE_DIR=' + sysconfig.get_path('include')]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
