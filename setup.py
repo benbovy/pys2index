@@ -5,6 +5,8 @@ import platform
 import subprocess
 import sysconfig
 
+import numpy as np
+
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
@@ -40,7 +42,8 @@ class CMakeBuild(build_ext):
 
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable,
-                      '-DPYTHON_INCLUDE_DIR=' + sysconfig.get_path('include')]
+                      '-DPYTHON_INCLUDE_DIR=' + sysconfig.get_path('include'),
+                      '-DPython_NumPy_INCLUDE_DIRS=' + np.get_include()]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
