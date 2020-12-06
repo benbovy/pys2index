@@ -28,7 +28,7 @@ message(STATUS "Found xtensor: ${xtensor_INCLUDE_DIRS}")
 find_package(xtensor-python REQUIRED)
 message(STATUS "Found xtensor-python: ${xtensor-python_INCLUDE_DIRS}")
 
-find_package (Python COMPONENTS Interpreter NumPy)
+find_package (Python3 COMPONENTS Interpreter NumPy)
 
 set(PYBIND11_PYTHON_VERSION ${Python_VERSION} CACHE STRING "")
 find_package(pybind11 REQUIRED)
