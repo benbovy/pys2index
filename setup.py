@@ -41,18 +41,20 @@ class CMakeBuild(build_ext):
             extdir += os.path.sep
 
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable,
-                      '-DPYTHON_INCLUDE_DIR=' + sysconfig.get_path('include'),
-                      '-DPython_NumPy_INCLUDE_DIRS=' + np.get_include()]
+                      '-DPYTHON3_EXECUTABLE=' + sys.executable]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
 
+        cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
+        single_config = any(x in cmake_generator for x in {"NMake", "Ninja"})
+        contains_arch = any(x in cmake_generator for x in {"ARM", "Win64"})
+
         if platform.system() == "Windows":
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
-            if sys.maxsize > 2**32:
+            if sys.maxsize > 2**32 and not single_config and not contains_arch:
                 cmake_args += ['-A', 'x64']
-            build_args += ['--', '/m']
+                build_args += ['--', '/m']
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j2']
