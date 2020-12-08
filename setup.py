@@ -3,7 +3,6 @@ import re
 import sys
 import platform
 import subprocess
-import sysconfig
 
 import numpy as np
 
@@ -41,7 +40,8 @@ class CMakeBuild(build_ext):
             extdir += os.path.sep
 
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON3_EXECUTABLE=' + sys.executable]
+                      '-DPYTHON3_EXECUTABLE=' + sys.executable,
+                      '-DPython3_NumPy_INCLUDE_DIR=' + np.get_include()]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
