@@ -35,8 +35,7 @@ public:
     template <class T>
     py::tuple query(const xt::pytensor<T, 2> &latlon_points);
 
-    const xt::pytensor<uint64, 1> get_cell_ids();
-    const xt::pytensor<double, 2> get_latlon_points();
+    xt::pytensor<uint64, 1> get_cell_ids();
 
 private:
     index_t m_index;
@@ -129,7 +128,7 @@ py::tuple s2point_index::query(const xt::pytensor<T, 2> &latlon_points)
 }
 
 
-const xt::pytensor<uint64, 1> s2point_index::get_cell_ids()
+xt::pytensor<uint64, 1> s2point_index::get_cell_ids()
 {
     xt::pytensor<uint64, 1> cell_ids(m_cell_ids);
 
