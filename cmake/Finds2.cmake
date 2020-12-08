@@ -49,7 +49,7 @@ find_path(s2_INCLUDE_DIR s2/s2cell.h
 find_library(s2_LIBRARY
   NAMES s2
   HINTS ${S2_ROOT}
-  PATH_SUFFIXES lib
+  PATH_SUFFIXES lib libs Library
   )
 
 find_package_handle_standard_args(s2
@@ -64,6 +64,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.0 AND S2_FOUND)
   set_target_properties(s2 PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${s2_INCLUDE_DIRS}
     IMPORTED_LOCATION ${s2_LIBRARIES}
+    IMPORTED_IMPLIB ${s2_LIBRARIES}
     )
 
   mark_as_advanced(s2_INCLUDE_DIRS s2_LIBRARIES)

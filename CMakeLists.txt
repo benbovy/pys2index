@@ -15,8 +15,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
 endif()
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /J")
     set(CMAKE_EXE_LINKER_FLAGS /MANIFEST:NO)
+    add_definitions(-D_USE_MATH_DEFINES)
+    add_definitions(-DNOMINMAX)
 endif()
 
 # Dependencies
@@ -28,7 +30,7 @@ message(STATUS "Found xtensor: ${xtensor_INCLUDE_DIRS}")
 find_package(xtensor-python REQUIRED)
 message(STATUS "Found xtensor-python: ${xtensor-python_INCLUDE_DIRS}")
 
-find_package (Python COMPONENTS Interpreter NumPy)
+find_package (Python3 COMPONENTS Interpreter NumPy)
 
 set(PYBIND11_PYTHON_VERSION ${Python_VERSION} CACHE STRING "")
 find_package(pybind11 REQUIRED)
@@ -43,7 +45,7 @@ add_library(pys2index MODULE src/main.cpp)
 target_include_directories(pys2index PUBLIC
   ${pys2index_INCLUDE_DIR}
   ${xtensor-python_INCLUDE_DIRS}
-  ${Python_NumPy_INCLUDE_DIRS}
+  ${Python3_NumPy_INCLUDE_DIRS}
   ${pybind11_INCLUDE_DIRS}
   ${s2_INCLUDE_DIRS}
   )
