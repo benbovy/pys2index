@@ -1,7 +1,7 @@
 pys2index
 =========
 
-![test status](https://github.com/benbovy/pys2index/workflows/test/badge.svg)
+[![test status](https://github.com/benbovy/pys2index/workflows/test/badge.svg)](https://github.com/benbovy/pys2index/actions)
 
 Python / NumPy compatible geographical index based on
 [s2geometry](https://s2geometry.io).
@@ -41,6 +41,40 @@ Build and install this library
 
 ``` bash
 $ python -m pip install .
+```
+
+Usage
+-----
+
+```python
+In [1]: import numpy as np
+
+In [2]: from pys2index import S2PointIndex
+
+In [3]: latlon_points = np.array([[40.0, 15.0], 
+   ...:                           [-20.0, 53.0], 
+   ...:                           [81.0, 153.0]])
+   ...:
+
+In [4]: index = S2PointIndex(latlon_points)
+
+In [5]: query_points = np.array([[-10.0, 60.0],
+   ...:                          [45.0, -20.0],
+   ...:                          [75.0, 122.0]])
+   ...:
+
+In [6]: distances, positions = index.query(query_points)
+
+In [7]: distances
+Out[7]: array([12.06534671, 26.07312392,  8.60671311])
+
+In [8]: positions
+Out[8]: array([1, 0, 2])
+
+In [9]: index.get_cell_ids()
+Out[9]: array([1386017682036854979, 2415595305706115691, 6525033740530229539],
+              dtype=uint64)
+
 ```
 
 Running the tests
