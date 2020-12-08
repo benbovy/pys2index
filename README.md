@@ -1,6 +1,8 @@
 pys2index
 =========
 
+![test status](https://github.com/benbovy/pys2index/workflows/test/badge.svg)
+
 Python / NumPy compatible geographical index based on
 [s2geometry](https://s2geometry.io).
 
@@ -19,32 +21,33 @@ Build Dependencies
 - Python
 - NumPy
 
-Installation
-------------
-
-**On Unix (Linux, MacOS)**
-
- - clone this repository
- - `pip install ./pys2index`
-
-Building the documentation
+Installation (from source)
 --------------------------
 
-Documentation for the example project is generated using Sphinx. Sphinx has the
-ability to automatically inspect the signatures and documentation strings in
-the extension module to generate beautiful documentation in a variety formats.
-The following command generates HTML-based reference documentation; for other
-formats please refer to the Sphinx manual:
+First, clone this repository:
 
- - `pys2index/docs`
- - `make html`
+``` bash
+$ git clone https://github.com/benbovy/pys2index
+$ cd pys2index
+```
 
+You can install all the dependencies using conda (or mamba):
+
+``` bash
+$ conda install python cxx-compiler numpy s2geometry pybind11 xtensor-python cmake -c conda-forge
+```
+
+Build and install this library
+
+``` bash
+$ python -m pip install .
+```
 
 Running the tests
 -----------------
 
-Running the tests requires `pytest`.
+Running the tests requires `pytest` (it is also available on conda-forge).
 
 ```bash
-py.test .
+$ pytest .
 ```
