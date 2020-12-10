@@ -1,5 +1,4 @@
-pys2index
-=========
+# pys2index
 
 [![test status](https://github.com/benbovy/pys2index/workflows/test/badge.svg)](https://github.com/benbovy/pys2index/actions)
 
@@ -10,8 +9,7 @@ This project doesn't provide Python wrappers for the whole `s2geometry` library.
 Instead, it aims to provide some index wrappers with an API similar to
 [scipy.spatial.cKDTree](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.cKDTree.html).
 
-Build Dependencies
-------------------
+## Build Dependencies
 
 - C++14 compiler
 - CMake
@@ -21,8 +19,18 @@ Build Dependencies
 - Python
 - NumPy
 
-Installation (from source)
---------------------------
+## Installation
+
+### Using conda
+
+pys2index can be installed using [conda](https://docs.conda.io) (or
+[mamba](https://github.com/mamba-org/mamba)):
+
+``` bash
+$ conda install pys2index -c conda-forge
+```
+
+### From source
 
 First, clone this repository:
 
@@ -43,8 +51,7 @@ Build and install this library
 $ python -m pip install .
 ```
 
-Usage
------
+## Usage
 
 ```python
 In [1]: import numpy as np
@@ -77,8 +84,7 @@ Out[9]: array([1386017682036854979, 2415595305706115691, 6525033740530229539],
 
 ```
 
-Running the tests
------------------
+## Running the tests
 
 Running the tests requires `pytest` (it is also available on conda-forge).
 
