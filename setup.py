@@ -71,7 +71,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='pys2index',
-    version='0.1.2',
+    version='0.2.0dev',
     author='Benoît Bovy',
     author_email='benbovy@gmail.com',
     url='https://github.com/benbovy/pys2index',
