@@ -20,120 +20,128 @@
 namespace py = pybind11;
 
 
-class s2point_index
+namespace pys2index
 {
-public:
-    using index_t = S2PointIndex<npy_intp>;
 
-    s2point_index(const s2point_index &idx);
+    class s2point_index
+    {
+    public:
+        using index_type = S2PointIndex<npy_intp>;
+        using cell_ids_type = xt::pytensor<uint64, 1>;
+        using positions_type = xt::pytensor<npy_intp, 1>;
 
-    s2point_index(const xt::pytensor<double, 2> &latlon_points);
-    s2point_index(const xt::pytensor<float, 2> &latlon_points);
+        template <class T>
+        using distances_type = xt::pytensor<T, 1>;
 
-    s2point_index(const xt::pytensor<uint64, 1> &cell_ids);
+        template <class T>
+        using query_return_type = std::tuple<distances_type<T>, positions_type>;
+
+        template <class T>
+        using points_type = xt::pytensor<T, 2>;
+
+        s2point_index() = default;
+
+        template <class T>
+        static std::unique_ptr<s2point_index> from_points(const points_type<T> &latlon_points);
+
+        static std::unique_ptr<s2point_index> from_cell_ids(const cell_ids_type &cell_ids);
+
+        template <class T>
+        query_return_type<T> query(const points_type<T> &latlon_points);
+
+        cell_ids_type get_cell_ids();
+
+    private:
+        index_type m_index;
+        cell_ids_type m_cell_ids;
+
+        template <class T>
+        void insert_latlon_points(const points_type<T> &latlon_points);
+
+        void insert_cell_ids();
+    };
 
     template <class T>
-    py::tuple query(const xt::pytensor<T, 2> &latlon_points);
+    std::unique_ptr<s2point_index> s2point_index::from_points(const points_type<T> &latlon_points)
+    {
+        auto index = std::make_unique<s2point_index>();
 
-    xt::pytensor<uint64, 1> get_cell_ids();
+        index->insert_latlon_points(latlon_points);
 
-private:
-    index_t m_index;
-    xt::xtensor<uint64, 1> m_cell_ids;
+        return index;
+    }
+
+    std::unique_ptr<s2point_index> s2point_index::from_cell_ids(const cell_ids_type &cell_ids)
+    {
+        auto index = std::make_unique<s2point_index>();
+
+        index->m_cell_ids = cell_ids;
+        index->insert_cell_ids();
+
+        return index;
+    }
 
     template <class T>
-    void insert_latlon_points(const xt::pytensor<T, 2> &latlon_points);
-
-    void insert_cell_ids();
-};
-
-
-s2point_index::s2point_index(const s2point_index &idx)
-    : m_cell_ids(idx.m_cell_ids)
-{
-    insert_cell_ids();
-}
-
-
-s2point_index::s2point_index(const xt::pytensor<double, 2> &latlon_points)
-{
-    insert_latlon_points(latlon_points);
-}
-
-
-s2point_index::s2point_index(const xt::pytensor<float, 2> &latlon_points)
-{
-    insert_latlon_points(latlon_points);
-}
-
-
-s2point_index::s2point_index(const xt::pytensor<uint64, 1> &cell_ids)
-    : m_cell_ids(cell_ids)
-{
-    insert_cell_ids();
-}
-
-
-void s2point_index::insert_cell_ids()
-{
-    auto num_points = m_cell_ids.size();
-
-    for (std::size_t i=0; i<num_points; ++i)
+    void s2point_index::insert_latlon_points(const points_type<T> &latlon_points)
     {
-        S2CellId c(m_cell_ids(i));
-        m_index.Add(c.ToPoint(), static_cast<npy_intp>(i));
+
+        auto n_points = latlon_points.shape()[0];
+        m_cell_ids.resize({n_points});
+
+        for (auto i=0; i<n_points; ++i)
+        {
+            S2CellId c(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
+
+            m_cell_ids(i) = c.id();
+            m_index.Add(c.ToPoint(), static_cast<npy_intp>(i));
+        }
+
+    }
+
+    void s2point_index::insert_cell_ids()
+    {
+        auto num_points = m_cell_ids.size();
+
+        for (std::size_t i=0; i<num_points; ++i)
+        {
+            S2CellId c(m_cell_ids(i));
+            m_index.Add(c.ToPoint(), static_cast<npy_intp>(i));
+        }
+
+    }
+
+    template <class T>
+    auto s2point_index::query(const points_type<T> &latlon_points) -> query_return_type<T>
+    {
+        auto n_points = latlon_points.shape()[0];
+        auto distances = distances_type<T>::from_shape({n_points});
+        auto positions = positions_type::from_shape({n_points});
+
+        S2ClosestPointQuery<npy_intp> query(&m_index);
+
+        for (auto i=0; i<n_points; ++i)
+        {
+            S2Point point(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
+            S2ClosestPointQuery<npy_intp>::PointTarget target(point);
+
+            auto results = query.FindClosestPoint(&target);
+
+            distances(i) = static_cast<T>(results.distance().degrees());
+            positions(i) = static_cast<npy_intp>(results.data());
+        }
+
+        return std::make_tuple(std::move(distances), std::move(positions));
+    }
+
+    auto s2point_index::get_cell_ids() -> cell_ids_type
+    {
+        cell_ids_type cell_ids(m_cell_ids);
+
+        return cell_ids;
     }
 
 }
 
-
-template <class T>
-void s2point_index::insert_latlon_points(const xt::pytensor<T, 2> &latlon_points)
-{
-    auto n_points = latlon_points.shape()[0];
-    m_cell_ids.resize({static_cast<std::size_t>(n_points)});
-
-    for (auto i=0; i<n_points; ++i)
-    {
-        S2CellId c(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
-
-        m_cell_ids(i) = c.id();
-        m_index.Add(c.ToPoint(), static_cast<npy_intp>(i));
-    }
-
-}
-
-
-template <class T>
-py::tuple s2point_index::query(const xt::pytensor<T, 2> &latlon_points)
-{
-    auto n_points = latlon_points.shape()[0];
-    auto distances = xt::pytensor<double, 1>::from_shape({n_points});
-    auto positions = xt::pytensor<npy_intp, 1>::from_shape({n_points});
-
-    S2ClosestPointQuery<npy_intp> query(&m_index);
-
-    for (auto i=0; i<n_points; ++i)
-    {
-        S2Point point(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
-        S2ClosestPointQuery<npy_intp>::PointTarget target(point);
-
-        auto results = query.FindClosestPoint(&target);
-
-        distances(i) = results.distance().degrees();
-        positions(i) = static_cast<npy_intp>(results.data());
-    }
-
-    return py::make_tuple(std::move(distances), std::move(positions));
-}
-
-
-xt::pytensor<uint64, 1> s2point_index::get_cell_ids()
-{
-    xt::pytensor<uint64, 1> cell_ids(m_cell_ids);
-
-    return cell_ids;
-}
 
 
 #endif // __S2POINTINDEX_H_

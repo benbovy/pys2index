@@ -1,15 +1,13 @@
-#include <memory>
-
 #include "pybind11/pybind11.h"
-
-#include "xtensor/xview.hpp"
 
 #define FORCE_IMPORT_ARRAY
 #include "xtensor-python/pytensor.hpp"
 
 #include "pys2index/s2pointindex.hpp"
 
+
 namespace py = pybind11;
+namespace pys2 = pys2index;
 
 
 PYBIND11_MODULE(pys2index, m)
@@ -26,9 +24,10 @@ PYBIND11_MODULE(pys2index, m)
 
            S2PointIndex
            S2PointIndex.query
+           S2PointIndex.get_cell_ids
     )pbdoc";
 
-    py::class_<s2point_index> py_s2pointindex (m, "S2PointIndex", R"pbdoc(
+    py::class_<pys2::s2point_index> py_s2pointindex (m, "S2PointIndex", R"pbdoc(
         S2 index for fast geographic point problems.
 
         Parameters
@@ -37,11 +36,11 @@ PYBIND11_MODULE(pys2index, m)
             2-d array of point coordinates (latitude, longitude) in degrees.
     )pbdoc");
 
-    py_s2pointindex.def(py::init<const xt::pytensor<double, 2>&>(), py::call_guard<py::gil_scoped_release>());
-    py_s2pointindex.def(py::init<const xt::pytensor<float, 2>&>(), py::call_guard<py::gil_scoped_release>());
-    py_s2pointindex.def(py::init<const xt::pytensor<uint64, 1>&>(), py::call_guard<py::gil_scoped_release>());
+    py_s2pointindex.def(py::init(&pys2::s2point_index::from_points<double>), py::call_guard<py::gil_scoped_release>());
+    py_s2pointindex.def(py::init(&pys2::s2point_index::from_points<float>), py::call_guard<py::gil_scoped_release>());
+    py_s2pointindex.def(py::init(&pys2::s2point_index::from_cell_ids), py::call_guard<py::gil_scoped_release>());
 
-    py_s2pointindex.def("query", &s2point_index::query<double>,
+    py_s2pointindex.def("query", &pys2::s2point_index::query<double>,
                         py::call_guard<py::gil_scoped_release>(),
                         R"pbdoc(
         Query the index for nearest neighbors.
@@ -59,19 +58,19 @@ PYBIND11_MODULE(pys2index, m)
             Indices of the nearest neighbor of the corresponding points.
 
     )pbdoc");
-    py_s2pointindex.def("query", &s2point_index::query<float>, py::call_guard<py::gil_scoped_release>(),
+    py_s2pointindex.def("query", &pys2::s2point_index::query<float>, py::call_guard<py::gil_scoped_release>(),
         "Query the index for nearest neighbors (float version).");
 
-    py_s2pointindex.def("get_cell_ids", &s2point_index::get_cell_ids,
+    py_s2pointindex.def("get_cell_ids", &pys2::s2point_index::get_cell_ids,
                         py::call_guard<py::gil_scoped_release>(),
                         py::return_value_policy::move);
 
     py_s2pointindex.def(py::pickle(
-        [](s2point_index &idx) {
+        [](pys2::s2point_index &idx) {
             return idx.get_cell_ids();
         },
-        [](xt::pytensor<uint64, 1> &cell_ids) {
-            return std::make_unique<s2point_index>(s2point_index(cell_ids));
+        [](pys2::s2point_index::cell_ids_type &cell_ids) {
+            return pys2::s2point_index::from_cell_ids(cell_ids);
         }
      ));
 
