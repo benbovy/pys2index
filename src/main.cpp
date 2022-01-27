@@ -2,8 +2,10 @@
 
 #define FORCE_IMPORT_ARRAY
 #include "xtensor-python/pytensor.hpp"
+#include "xtensor-python/pyvectorize.hpp"
 
 #include "pys2index/s2pointindex.hpp"
+#include "pys2index/box.hpp"
 
 
 namespace py = pybind11;
@@ -74,4 +76,14 @@ PYBIND11_MODULE(pys2index, m)
         }
      ));
 
+    py::class_<pys2::box>(m, "Box")
+        .def(py::init<double, double, double, double>())
+        .def("contains", &pys2::box::contains);
+
+    m.def("contains", &pys2::contains, "");
+    m.def("create_box_array", &pys2::create_box_array, py::return_value_policy::reference);
+    //m.def("vect_contains", py::vectorize(pys2::contains), "");
+    m.def("vect_dummy", xt::pyvectorize(pys2::dummy), "");
+    m.def("vect_contains_alt", xt::pyvectorize(pys2::contains_alt), "");
+    m.def("contains_arr1d", &pys2::contains_arr1d, "");
 }
