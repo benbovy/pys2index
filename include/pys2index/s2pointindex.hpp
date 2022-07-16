@@ -88,6 +88,8 @@ namespace pys2index
         auto n_points = latlon_points.shape()[0];
         m_cell_ids.resize({n_points});
 
+        py::gil_scoped_release release;
+
         for (auto i=0; i<n_points; ++i)
         {
             S2CellId c(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
@@ -96,11 +98,14 @@ namespace pys2index
             m_index.Add(c.ToPoint(), static_cast<npy_intp>(i));
         }
 
+        py::gil_scoped_acquire acquire;
     }
 
     void s2point_index::insert_cell_ids()
     {
         auto num_points = m_cell_ids.size();
+
+        py::gil_scoped_release release;
 
         for (std::size_t i=0; i<num_points; ++i)
         {
@@ -108,6 +113,7 @@ namespace pys2index
             m_index.Add(c.ToPoint(), static_cast<npy_intp>(i));
         }
 
+        py::gil_scoped_acquire acquire;
     }
 
     template <class T>
@@ -116,6 +122,8 @@ namespace pys2index
         auto n_points = latlon_points.shape()[0];
         auto distances = distances_type<T>::from_shape({n_points});
         auto positions = positions_type::from_shape({n_points});
+
+        py::gil_scoped_release release;
 
         S2ClosestPointQuery<npy_intp> query(&m_index);
 
@@ -129,6 +137,8 @@ namespace pys2index
             distances(i) = static_cast<T>(results.distance().degrees());
             positions(i) = static_cast<npy_intp>(results.data());
         }
+
+        py::gil_scoped_acquire acquire;
 
         return std::make_tuple(std::move(distances), std::move(positions));
     }
