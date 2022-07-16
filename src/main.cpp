@@ -36,12 +36,11 @@ PYBIND11_MODULE(pys2index, m)
             2-d array of point coordinates (latitude, longitude) in degrees.
     )pbdoc");
 
-    py_s2pointindex.def(py::init(&pys2::s2point_index::from_points<double>), py::call_guard<py::gil_scoped_release>());
-    py_s2pointindex.def(py::init(&pys2::s2point_index::from_points<float>), py::call_guard<py::gil_scoped_release>());
-    py_s2pointindex.def(py::init(&pys2::s2point_index::from_cell_ids), py::call_guard<py::gil_scoped_release>());
+    py_s2pointindex.def(py::init(&pys2::s2point_index::from_points<double>));
+    py_s2pointindex.def(py::init(&pys2::s2point_index::from_points<float>));
+    py_s2pointindex.def(py::init(&pys2::s2point_index::from_cell_ids));
 
     py_s2pointindex.def("query", &pys2::s2point_index::query<double>,
-                        py::call_guard<py::gil_scoped_release>(),
                         R"pbdoc(
         Query the index for nearest neighbors.
 
@@ -58,11 +57,10 @@ PYBIND11_MODULE(pys2index, m)
             Indices of the nearest neighbor of the corresponding points.
 
     )pbdoc");
-    py_s2pointindex.def("query", &pys2::s2point_index::query<float>, py::call_guard<py::gil_scoped_release>(),
+    py_s2pointindex.def("query", &pys2::s2point_index::query<float>,
         "Query the index for nearest neighbors (float version).");
 
     py_s2pointindex.def("get_cell_ids", &pys2::s2point_index::get_cell_ids,
-                        py::call_guard<py::gil_scoped_release>(),
                         py::return_value_policy::move);
 
     py_s2pointindex.def(py::pickle(
