@@ -1,14 +1,11 @@
-cmake_minimum_required(VERSION 3.12)
-project(pys2index)
+cmake_minimum_required(VERSION 3.15)
+project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH
   ${PROJECT_SOURCE_DIR}/cmake
   ${CMAKE_MODULE_PATH})
 
 set(pys2index_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-set(CMAKE_CXX_STANDARD 14)
-set(PYBIND11_CPP_STANDARD -std=c++14)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder -Wconversion -fvisibility=hidden")
@@ -30,10 +27,12 @@ message(STATUS "Found xtensor: ${xtensor_INCLUDE_DIRS}")
 find_package(xtensor-python REQUIRED)
 message(STATUS "Found xtensor-python: ${xtensor-python_INCLUDE_DIRS}")
 
-find_package (Python3 COMPONENTS Interpreter NumPy)
+find_package (Python COMPONENTS Interpreter Development.Module NumPy REQUIRED)
+message(STATUS "Found python v${Python_VERSION}: ${Python_EXECUTABLE}")
+message(STATUS "Found numpy v${Python_NumPy_VERSION}: ${Python_NumPy_INCLUDE_DIRS}")
 
-set(PYBIND11_PYTHON_VERSION ${Python_VERSION} CACHE STRING "")
 find_package(pybind11 REQUIRED)
+message(STATUS "Found pybind11 v${pybind11_VERSION}: ${pybind11_INCLUDE_DIRS}")
 
 find_package(s2 REQUIRED)
 
@@ -42,21 +41,26 @@ find_package(s2 REQUIRED)
 
 add_library(pys2index MODULE src/main.cpp)
 
-target_include_directories(pys2index PUBLIC
-  ${pys2index_INCLUDE_DIR}
-  ${xtensor-python_INCLUDE_DIRS}
-  ${Python3_NumPy_INCLUDE_DIRS}
-  ${pybind11_INCLUDE_DIRS}
-  ${s2_INCLUDE_DIRS}
-  )
+target_include_directories(pys2index PUBLIC ${pys2index_INCLUDE_DIR})
 
-target_link_libraries(pys2index PUBLIC
+target_compile_features(pys2index PUBLIC cxx_std_17)
+target_compile_definitions(pys2index PRIVATE VERSION_INFO=${PROJECT_VERSION})
+
+target_link_libraries(pys2index PRIVATE
   xtensor
   xtensor-python
   pybind11::module
+  Python::NumPy
   s2
   )
 
-set_target_properties(pys2index PROPERTIES
-  PREFIX "${PYTHON_MODULE_PREFIX}"
-  SUFFIX "${PYTHON_MODULE_EXTENSION}")
+pybind11_extension(pys2index)
+if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
+    # Strip unnecessary sections of the binary on Linux/macOS
+    pybind11_strip(pys2index)
+endif()
+
+# Installation
+# ============
+
+install(TARGETS pys2index LIBRARY DESTINATION .)
