@@ -59,8 +59,8 @@ In [1]: import numpy as np
 
 In [2]: from pys2index import S2PointIndex
 
-In [3]: latlon_points = np.array([[40.0, 15.0], 
-   ...:                           [-20.0, 53.0], 
+In [3]: latlon_points = np.array([[40.0, 15.0],
+   ...:                           [-20.0, 53.0],
    ...:                           [81.0, 153.0]])
    ...:
 
