@@ -42,12 +42,12 @@ namespace pys2index
         s2point_index() = default;
 
         template <class T>
-        static std::unique_ptr<s2point_index> from_points(const points_type<T> &latlon_points);
+        static std::unique_ptr<s2point_index> from_points(const points_type<T>& latlon_points);
 
-        static std::unique_ptr<s2point_index> from_cell_ids(const cell_ids_type &cell_ids);
+        static std::unique_ptr<s2point_index> from_cell_ids(const cell_ids_type& cell_ids);
 
         template <class T>
-        query_return_type<T> query(const points_type<T> &latlon_points);
+        query_return_type<T> query(const points_type<T>& latlon_points);
 
         cell_ids_type get_cell_ids();
 
@@ -56,13 +56,13 @@ namespace pys2index
         cell_ids_type m_cell_ids;
 
         template <class T>
-        void insert_latlon_points(const points_type<T> &latlon_points);
+        void insert_latlon_points(const points_type<T>& latlon_points);
 
         void insert_cell_ids();
     };
 
     template <class T>
-    std::unique_ptr<s2point_index> s2point_index::from_points(const points_type<T> &latlon_points)
+    std::unique_ptr<s2point_index> s2point_index::from_points(const points_type<T>& latlon_points)
     {
         auto index = std::make_unique<s2point_index>();
 
@@ -71,7 +71,7 @@ namespace pys2index
         return index;
     }
 
-    std::unique_ptr<s2point_index> s2point_index::from_cell_ids(const cell_ids_type &cell_ids)
+    std::unique_ptr<s2point_index> s2point_index::from_cell_ids(const cell_ids_type& cell_ids)
     {
         auto index = std::make_unique<s2point_index>();
 
@@ -82,15 +82,14 @@ namespace pys2index
     }
 
     template <class T>
-    void s2point_index::insert_latlon_points(const points_type<T> &latlon_points)
+    void s2point_index::insert_latlon_points(const points_type<T>& latlon_points)
     {
-
         auto n_points = latlon_points.shape()[0];
-        m_cell_ids.resize({n_points});
+        m_cell_ids.resize({ n_points });
 
         py::gil_scoped_release release;
 
-        for (auto i=0; i<n_points; ++i)
+        for (auto i = 0; i < n_points; ++i)
         {
             S2CellId c(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
 
@@ -107,7 +106,7 @@ namespace pys2index
 
         py::gil_scoped_release release;
 
-        for (std::size_t i=0; i<num_points; ++i)
+        for (std::size_t i = 0; i < num_points; ++i)
         {
             S2CellId c(m_cell_ids(i));
             m_index.Add(c.ToPoint(), static_cast<npy_intp>(i));
@@ -117,17 +116,17 @@ namespace pys2index
     }
 
     template <class T>
-    auto s2point_index::query(const points_type<T> &latlon_points) -> query_return_type<T>
+    auto s2point_index::query(const points_type<T>& latlon_points) -> query_return_type<T>
     {
         auto n_points = latlon_points.shape()[0];
-        auto distances = distances_type<T>::from_shape({n_points});
-        auto positions = positions_type::from_shape({n_points});
+        auto distances = distances_type<T>::from_shape({ n_points });
+        auto positions = positions_type::from_shape({ n_points });
 
         py::gil_scoped_release release;
 
         S2ClosestPointQuery<npy_intp> query(&m_index);
 
-        for (auto i=0; i<n_points; ++i)
+        for (auto i = 0; i < n_points; ++i)
         {
             S2Point point(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
             S2ClosestPointQuery<npy_intp>::PointTarget target(point);
@@ -153,5 +152,4 @@ namespace pys2index
 }
 
 
-
-#endif // __S2POINTINDEX_H_
+#endif  // __S2POINTINDEX_H_

@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: debug-statements
+      - id: mixed-line-ending
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v16.0.6
+    hooks:
+      - id: clang-format
+        args: [--style=file]
+
+ci:
+  autoupdate_schedule: monthly
+  autofix_commit_msg: "style(pre-commit.ci): auto fixes [...]"
+  autoupdate_commit_msg: "ci(pre-commit.ci): autoupdate"
+  autofix_prs: false

@@ -11,9 +11,10 @@ Instead, it aims to provide some index wrappers with an API similar to
 
 ## Build Dependencies
 
-- C++14 compiler
+- C++17 compiler
 - CMake
 - [s2geometry](https://github.com/google/s2geometry)
+- [scikit-build-core](https://github.com/scikit-build/scikit-build-core)
 - [xtensor-python](https://github.com/xtensor-stack/xtensor-python)
 - [pybind11](https://github.com/pybind/pybind11)
 - Python
@@ -42,13 +43,13 @@ $ cd pys2index
 You can install all the dependencies using conda (or mamba):
 
 ``` bash
-$ conda install python cxx-compiler numpy s2geometry pybind11 xtensor-python cmake -c conda-forge
+$ conda install python cxx-compiler numpy s2geometry pybind11 xtensor-python cmake scikit-build-core -c conda-forge
 ```
 
 Build and install this library
 
 ``` bash
-$ python -m pip install .
+$ python -m pip install . --no-build-isolation
 ```
 
 ## Usage
@@ -58,8 +59,8 @@ In [1]: import numpy as np
 
 In [2]: from pys2index import S2PointIndex
 
-In [3]: latlon_points = np.array([[40.0, 15.0], 
-   ...:                           [-20.0, 53.0], 
+In [3]: latlon_points = np.array([[40.0, 15.0],
+   ...:                           [-20.0, 53.0],
    ...:                           [81.0, 153.0]])
    ...:
 
