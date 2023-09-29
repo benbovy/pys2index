@@ -1,5 +1,19 @@
 cmake_minimum_required(VERSION 3.15)
-project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
+
+if(NOT SKBUILD_PROJECT_NAME)
+    set(SKBUILD_PROJECT_NAME "pys2index")
+endif()
+
+if(NOT SKBUILD_PROJECT_VERSION)
+    set(SKBUILD_PROJECT_VERSION 9999)
+endif()
+
+project(
+  ${SKBUILD_PROJECT_NAME}
+  LANGUAGES CXX)
+
+# https://gitlab.kitware.com/cmake/cmake/-/issues/16716
+set(PROJECT_VERSION ${SKBUILD_PROJECT_VERSION})
 
 set(CMAKE_MODULE_PATH
   ${PROJECT_SOURCE_DIR}/cmake

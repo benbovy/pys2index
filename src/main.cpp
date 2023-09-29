@@ -5,6 +5,8 @@
 
 #include "pys2index/s2pointindex.hpp"
 
+#define STRINGIFY(x) #x
+#define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 namespace py = pybind11;
 namespace pys2 = pys2index;
@@ -68,4 +70,10 @@ PYBIND11_MODULE(pys2index, m)
     py_s2pointindex.def(py::pickle([](pys2::s2point_index& idx) { return idx.get_cell_ids(); },
                                    [](pys2::s2point_index::cell_ids_type& cell_ids)
                                    { return pys2::s2point_index::from_cell_ids(cell_ids); }));
+
+#ifdef VERSION_INFO
+    m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
+#else
+    m.attr("__version__") = "dev";
+#endif
 }
