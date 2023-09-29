@@ -1,0 +1,14 @@
+name: pys2index-dev
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.9
+  - cxx-compiler
+  - numpy
+  - s2geometry
+  - xtensor
+  - xtensor-python>=0.24
+  - scikit-build-core
+  - cmake
+  - pytest
+  - pip
