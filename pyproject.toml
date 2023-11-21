@@ -7,7 +7,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pys2index"
-version = "0.2.0.dev"
+version = "0.1.5"
 description = "Python/NumPy compatible geographical index based on s2geometry"
 keywords = ["python", "numpy", "s2geometry", "index"]
 readme = "README.md"
