@@ -26,3 +26,11 @@ Repository = "https://github.com/benbovy/pys2index"
 
 [project.optional-dependencies]
 test = ["pytest>=6.0"]
+
+[tool.scikit-build]
+sdist.exclude = [
+    ".clang-format",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    ".github",
+]
