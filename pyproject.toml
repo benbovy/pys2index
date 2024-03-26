@@ -26,6 +26,7 @@ Repository = "https://github.com/benbovy/pys2index"
 
 [project.optional-dependencies]
 test = ["pytest>=6.0"]
+tbb = ["tbb", "tbb-devel"]
 
 [tool.scikit-build]
 sdist.exclude = [
