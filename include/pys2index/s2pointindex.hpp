@@ -26,7 +26,6 @@
 #include "s2/s2latlng.h"
 #include "s2/s2point.h"
 #include "s2/s2point_index.h"
-//#include "s2/s2earth.h"
 #include "s2/s1chord_angle.h"
 
 namespace py = pybind11;
@@ -178,13 +177,11 @@ namespace pys2index
           if (!std::isinf(max_distance))
           {
             query.mutable_options()->set_max_distance(
-              //S2Earth::MetersToAngle(max_distance));
               S1ChordAngle::Degrees(max_distance));
           }
           if (max_error > 0.0)
           {
             query.mutable_options()->set_max_error(
-              //S2Earth::MetersToAngle(max_error));
               S1ChordAngle::Degrees(max_error));
           }
 #ifdef S2POINTINDEX_TBB
@@ -197,7 +194,6 @@ namespace pys2index
             S2ClosestPointQuery<npy_intp>::PointTarget target(point);
             std::size_t n = 0;
             for (const auto& result : query.FindClosestPoints(&target)) {
-              //distances(i, n) = static_cast<T>(S2Earth::ToMeters(result.distance()));
               distances(i, n) = static_cast<T>(result.distance().degrees());
               positions(i, n) = static_cast<npy_intp>(result.data());
               n++;
