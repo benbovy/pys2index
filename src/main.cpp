@@ -1,4 +1,4 @@
-//#include <cmath>
+// #include <cmath>
 #include "pybind11/pybind11.h"
 
 #define FORCE_IMPORT_ARRAY
@@ -58,12 +58,11 @@ PYBIND11_MODULE(pys2index, m)
         cell_ids : ndarray of shape (n_points,), dtype=uint64
             array of cell ids.
 
-    )pbdoc"
-                              );
+    )pbdoc");
     py_s2pointindex.def_static("to_cell_ids",
                                &pys2::s2point_index::to_cell_ids<float>,
                                "Convert latlon points to S2 IDs (float version).");
-    
+
     py_s2pointindex.def("query",
                         &pys2::s2point_index::query<double>,
                         R"pbdoc(
@@ -92,7 +91,7 @@ PYBIND11_MODULE(pys2index, m)
     )pbdoc",
                         py::arg("latlon_points"),
                         py::arg("max_results") = 1,
-                        py::arg("max_error") = 0., 
+                        py::arg("max_error") = 0.,
                         py::arg("max_distance") = std::numeric_limits<double>::infinity());
     py_s2pointindex.def("query",
                         &pys2::s2point_index::query<float>,

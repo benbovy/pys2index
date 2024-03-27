@@ -17,8 +17,8 @@
 #include "xtensor/xsort.hpp"
 
 #if __has_include("tbb/parallel_for.h")
-#  define S2POINTINDEX_TBB
-#  include "tbb/parallel_for.h"
+#define S2POINTINDEX_TBB
+#include "tbb/parallel_for.h"
 #endif
 
 #include "s2/s2cell_id.h"
@@ -66,7 +66,7 @@ namespace pys2index
                                    const double max_distance);
 
         cell_ids_type get_cell_ids();
-        
+
         template <class T>
         static cell_ids_type to_cell_ids(const points_type<T>& latlon_points);
 
@@ -108,19 +108,20 @@ namespace pys2index
 
         py::gil_scoped_release release;
 #ifdef S2POINTINDEX_TBB
-        tbb::parallel_for(tbb::blocked_range<std::size_t>(0, n_points),
-                          [&](tbb::blocked_range<std::size_t> r) 
-        {
-           for (std::size_t i=r.begin(); i<r.end(); ++i)
+        tbb::parallel_for(
+            tbb::blocked_range<std::size_t>(0, n_points),
+            [&](tbb::blocked_range<std::size_t> r)
+            {
+                for (std::size_t i = r.begin(); i < r.end(); ++i)
 #else
-           for (std::size_t i = 0; i < n_points; ++i)
+        for (std::size_t i = 0; i < n_points; ++i)
 #endif
-           {
-              S2CellId c(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
-              cell_ids(i) = c.id();
-           }
+                {
+                    S2CellId c(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
+                    cell_ids(i) = c.id();
+                }
 #ifdef S2POINTINDEX_TBB
-        });
+            });
 #endif
         py::gil_scoped_acquire acquire;
         return cell_ids;
@@ -149,11 +150,10 @@ namespace pys2index
     }
 
     template <class T>
-    auto s2point_index::query(
-        const points_type<T>& latlon_points,
-        const std::size_t max_results,
-        const double max_error,
-        const double max_distance) -> query_return_type<T>
+    auto s2point_index::query(const points_type<T>& latlon_points,
+                              const std::size_t max_results,
+                              const double max_error,
+                              const double max_distance) -> query_return_type<T>
     {
         auto n_points = latlon_points.shape()[0];
         auto distances = distances_type<T>::from_shape({ n_points, max_results });
@@ -165,57 +165,54 @@ namespace pys2index
         positions.fill(n_points);
 #else
         tbb::parallel_for(tbb::blocked_range<std::size_t>(0, n_points),
-                          [&](tbb::blocked_range<std::size_t> r) 
+                          [&](tbb::blocked_range<std::size_t> r)
         {
-          auto dview = xt::view(distances, xt::range(r.begin(), r.end()), xt::all());
-          dview.fill(std::numeric_limits<T>::infinity());
-          auto pview = xt::view(positions, xt::range(r.begin(), r.end()), xt::all());
-          pview.fill(n_points);
-#endif    
-          S2ClosestPointQuery<npy_intp> query(&m_index);
-          query.mutable_options()->set_max_results(max_results);
-          if (!std::isinf(max_distance))
-          {
-            query.mutable_options()->set_max_distance(
-              S1ChordAngle::Degrees(max_distance));
-          }
-          if (max_error > 0.0)
-          {
-            query.mutable_options()->set_max_error(
-              S1ChordAngle::Degrees(max_error));
-          }
-#ifdef S2POINTINDEX_TBB
-          for (std::size_t i=r.begin(); i<r.end(); ++i)
-#else
-          for (std::size_t i = 0; i < n_points; ++i)
+            auto dview = xt::view(distances, xt::range(r.begin(), r.end()), xt::all());
+            dview.fill(std::numeric_limits<T>::infinity());
+            auto pview = xt::view(positions, xt::range(r.begin(), r.end()), xt::all());
+            pview.fill(n_points);
 #endif
-          {
+        S2ClosestPointQuery<npy_intp> query(&m_index);
+        query.mutable_options()->set_max_results(max_results);
+        if (!std::isinf(max_distance))
+        {
+            query.mutable_options()->set_max_distance(S1ChordAngle::Degrees(max_distance));
+        }
+        if (max_error > 0.0)
+        {
+            query.mutable_options()->set_max_error(S1ChordAngle::Degrees(max_error));
+        }
+#ifdef S2POINTINDEX_TBB
+        for (std::size_t i = r.begin(); i < r.end(); ++i)
+#else
+            for (std::size_t i = 0; i < n_points; ++i)
+#endif
+        {
             S2Point point(S2LatLng::FromDegrees(latlon_points(i, 0), latlon_points(i, 1)));
             S2ClosestPointQuery<npy_intp>::PointTarget target(point);
             std::size_t n = 0;
-            for (const auto& result : query.FindClosestPoints(&target)) {
-              distances(i, n) = static_cast<T>(result.distance().degrees());
-              positions(i, n) = static_cast<npy_intp>(result.data());
-              n++;
+            for (const auto& result : query.FindClosestPoints(&target))
+            {
+                distances(i, n) = static_cast<T>(result.distance().degrees());
+                positions(i, n) = static_cast<npy_intp>(result.data());
+                n++;
             }
-          }
+        }
 #ifdef S2POINTINDEX_TBB
-        });
+    });
 #endif
-        py::gil_scoped_acquire acquire;
+    py::gil_scoped_acquire acquire;
 
-        return std::make_tuple(
-          std::move(xt::squeeze(distances)),
-          std::move(xt::squeeze(positions)));
-    }
+    return std::make_tuple(std::move(xt::squeeze(distances)), std::move(xt::squeeze(positions)));
+}
 
-    auto s2point_index::get_cell_ids() -> cell_ids_type
-    {
-        cell_ids_type cell_ids(m_cell_ids);
+auto
+s2point_index::get_cell_ids() -> cell_ids_type
+{
+    cell_ids_type cell_ids(m_cell_ids);
 
-        return cell_ids;
-    }
-
+    return cell_ids;
+}
 }
 
 
