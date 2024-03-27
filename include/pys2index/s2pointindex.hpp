@@ -26,7 +26,8 @@
 #include "s2/s2latlng.h"
 #include "s2/s2point.h"
 #include "s2/s2point_index.h"
-#include "s2/s2earth.h"
+//#include "s2/s2earth.h"
+#include "s2/s1chord_angle.h"
 
 namespace py = pybind11;
 
@@ -61,9 +62,9 @@ namespace pys2index
 
         template <class T>
         query_return_type<T> query(const points_type<T>& latlon_points,
-                                   const long unsigned int k,
-                                   const double eps,
-                                   const double distance_upper_bound);
+                                   const std::size_t max_results,
+                                   const double max_error,
+                                   const double max_distance);
 
         cell_ids_type get_cell_ids();
         
@@ -151,13 +152,13 @@ namespace pys2index
     template <class T>
     auto s2point_index::query(
         const points_type<T>& latlon_points,
-        const std::size_t k,
-        const double eps,
-        const double distance_upper_bound) -> query_return_type<T>
+        const std::size_t max_results,
+        const double max_error,
+        const double max_distance) -> query_return_type<T>
     {
         auto n_points = latlon_points.shape()[0];
-        auto distances = distances_type<T>::from_shape({ n_points, k });
-        auto positions = positions_type::from_shape({ n_points, k });
+        auto distances = distances_type<T>::from_shape({ n_points, max_results });
+        auto positions = positions_type::from_shape({ n_points, max_results });
 
         py::gil_scoped_release release;
 #ifndef S2POINTINDEX_TBB
@@ -173,15 +174,18 @@ namespace pys2index
           pview.fill(n_points);
 #endif    
           S2ClosestPointQuery<npy_intp> query(&m_index);
-          query.mutable_options()->set_max_results(k);
-          if (!std::isinf(distance_upper_bound))
+          query.mutable_options()->set_max_results(max_results);
+          if (!std::isinf(max_distance))
           {
             query.mutable_options()->set_max_distance(
-              S2Earth::MetersToAngle(distance_upper_bound));
+              //S2Earth::MetersToAngle(max_distance));
+              S1ChordAngle::Degrees(max_distance));
           }
-          if (eps > 0.0)
+          if (max_error > 0.0)
           {
-            query.mutable_options()->set_max_error(S2Earth::MetersToAngle(eps));
+            query.mutable_options()->set_max_error(
+              //S2Earth::MetersToAngle(max_error));
+              S1ChordAngle::Degrees(max_error));
           }
 #ifdef S2POINTINDEX_TBB
           for (std::size_t i=r.begin(); i<r.end(); ++i)
@@ -193,7 +197,8 @@ namespace pys2index
             S2ClosestPointQuery<npy_intp>::PointTarget target(point);
             std::size_t n = 0;
             for (const auto& result : query.FindClosestPoints(&target)) {
-              distances(i, n) = static_cast<T>(S2Earth::ToMeters(result.distance()));
+              //distances(i, n) = static_cast<T>(S2Earth::ToMeters(result.distance()));
+              distances(i, n) = static_cast<T>(result.distance().degrees());
               positions(i, n) = static_cast<npy_intp>(result.data());
               n++;
             }
