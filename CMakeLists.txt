@@ -50,6 +50,11 @@ message(STATUS "Found pybind11 v${pybind11_VERSION}: ${pybind11_INCLUDE_DIRS}")
 
 find_package(s2 REQUIRED)
 
+find_package(TBB)
+if(TBB_FOUND)
+    message(STATUS "Found tbb v${TBB_VERSION}: ${TBB_INCLUDE_DIRS}")
+endif()
+
 # Build
 # =====
 
@@ -67,6 +72,9 @@ target_link_libraries(pys2index PRIVATE
   Python::NumPy
   s2
   )
+if(TBB_FOUND)
+    target_link_libraries(pys2index PRIVATE TBB::tbb)
+endif()
 
 pybind11_extension(pys2index)
 if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)

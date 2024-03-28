@@ -1,3 +1,4 @@
+// #include <cmath>
 #include "pybind11/pybind11.h"
 
 #define FORCE_IMPORT_ARRAY
@@ -42,6 +43,26 @@ PYBIND11_MODULE(pys2index, m)
     py_s2pointindex.def(py::init(&pys2::s2point_index::from_points<float>));
     py_s2pointindex.def(py::init(&pys2::s2point_index::from_cell_ids));
 
+    py_s2pointindex.def_static("to_cell_ids",
+                               &pys2::s2point_index::to_cell_ids<double>,
+                               R"pbdoc(
+        Convert latlon points to S2 IDs.
+
+        Parameters
+        ----------
+        latlon_points : ndarray of shape (n_points, 2), dtype=double
+            2-d array of point coordinates (latitude, longitude) in degrees.
+
+        Returns
+        -------
+        cell_ids : ndarray of shape (n_points,), dtype=uint64
+            array of cell ids.
+
+    )pbdoc");
+    py_s2pointindex.def_static("to_cell_ids",
+                               &pys2::s2point_index::to_cell_ids<float>,
+                               "Convert latlon points to S2 IDs (float version).");
+
     py_s2pointindex.def("query",
                         &pys2::s2point_index::query<double>,
                         R"pbdoc(
@@ -51,18 +72,34 @@ PYBIND11_MODULE(pys2index, m)
         ----------
         latlon_points : ndarray of shape (n_points, 2), dtype=double
             2-d array of query point coordinates (latitude, longitude) in degrees.
+        max_results : int
+            Maximum number of nearest neighbors to return
+        max_error : double
+            Specifies that points up to max_error further away than the true
+            closest points may be substituted in the result set (in degrees).
+        max_distance : double
+            Specifies that only points whose distance to the target is less than
+            "max_distance" should be returned (in degrees).
 
         Returns
         -------
-        distances : ndarray of shape (n_points,), dtype=double
+        distances : ndarray of shape (n_points,) if k=1 else (n_points, k), dtype=double
             Distance to the nearest neighbor of the cooresponding points (in degrees).
-        positions : ndarray of shape (n_points,), dtype=int
+        positions : ndarray of shape (n_points,) if k=1 else (n_points, k), dtype=int
             Indices of the nearest neighbor of the corresponding points.
 
-    )pbdoc");
+    )pbdoc",
+                        py::arg("latlon_points"),
+                        py::arg("max_results") = 1,
+                        py::arg("max_error") = 0.,
+                        py::arg("max_distance") = std::numeric_limits<double>::infinity());
     py_s2pointindex.def("query",
                         &pys2::s2point_index::query<float>,
-                        "Query the index for nearest neighbors (float version).");
+                        "Query the index for nearest neighbors (float version).",
+                        py::arg("latlon_points"),
+                        py::arg("max_results") = 1,
+                        py::arg("max_error") = 0.,
+                        py::arg("max_distance") = std::numeric_limits<double>::infinity());
 
     py_s2pointindex.def(
         "get_cell_ids", &pys2::s2point_index::get_cell_ids, py::return_value_policy::move);
