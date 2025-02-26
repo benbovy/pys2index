@@ -48,7 +48,7 @@ message(STATUS "Found numpy v${Python_NumPy_VERSION}: ${Python_NumPy_INCLUDE_DIR
 find_package(pybind11 REQUIRED)
 message(STATUS "Found pybind11 v${pybind11_VERSION}: ${pybind11_INCLUDE_DIRS}")
 
-find_package(s2 REQUIRED)
+find_package(s2 CONFIG REQUIRED)
 
 # Build
 # =====
