@@ -65,7 +65,7 @@ target_link_libraries(pys2index PRIVATE
   xtensor-python
   pybind11::module
   Python::NumPy
-  s2
+  s2::s2
   )
 
 pybind11_extension(pys2index)
